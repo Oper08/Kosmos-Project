@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Солнечная система</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+</head>
+<body style="margin: 0; overflow: hidden;">
+    <script>
+        // === СЦЕНА, КАМЕРА, РЕНДЕР ===
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        // === СОЛНЦЕ ===
+        const sunGeometry = new THREE.SphereGeometry(5, 32, 32); // Размер Солнца
+        const sunMaterial = new THREE.MeshBasicMaterial({ color: 0xffcc00, emissive: 0xffaa00 }); // Светящееся Солнце
+        const sun = new THREE.Mesh(sunGeometry, sunMaterial);
+        scene.add(sun);
+
+        // === ПЛАНЕТЫ ===
+        const planets = [];
+        const planetData = [
+            { name: "Mercury", size: 0.5, distance: 8, speed: 0.02, color: 0xaaaaaa },
+            { name: "Venus", size: 1, distance: 12, speed: 0.015, color: 0xff9900 },
+            { name: "Earth", size: 1.2, distance: 16, speed: 0.01, color: 0x3399ff },
+            { name: "Mars", size: 0.8, distance: 20, speed: 0.008, color: 0xff3300 },
+            { name: "Jupiter", size: 2.5, distance: 30, speed: 0.005, color: 0xffaa00 },
+            { name: "Saturn", size: 2, distance: 40, speed: 0.004, color: 0xffcc66 },
+            { name: "Uranus", size: 1.5, distance: 50, speed: 0.003, color: 0x66ccff },
+            { name: "Neptune", size: 1.4, distance: 60, speed: 0.002, color: 0x3333ff }
+        ];
+
+        planetData.forEach(data => {
+            let geometry = new THREE.SphereGeometry(data.size, 32, 32);
+            let material = new THREE.MeshStandardMaterial({ color: data.color });
+            let planet = new THREE.Mesh(geometry, material);
+            planet.orbitRadius = data.distance;
+            planet.orbitSpeed = data.speed;
+            planet.angle = Math.random() * Math.PI * 2; // случайный угол старта
+            scene.add(planet);
+            planets.push(planet);
+        });
+
+        // === ОСВЕЩЕНИЕ ===
+        const light = new THREE.PointLight(0xffffff, 2, 100);
+        light.position.set(0, 0, 0);
+        scene.add(light);
+
+        // === КАМЕРА ===
+        camera.position.z = 50;
+
+        // === АНИМАЦИЯ ===
+        function animate() {
+            requestAnimationFrame(animate);
+
+            // Вращение планет вокруг своей оси и вокруг Солнца
+            planets.forEach(planet => {
+                planet.angle += planet.orbitSpeed;
+                planet.position.x = Math.cos(planet.angle) * planet.orbitRadius;
+                planet.position.z = Math.sin(planet.angle) * planet.orbitRadius;
+                planet.rotation.y += 0.01; // Вращение вокруг оси
+            });
+
+            renderer.render(scene, camera);
+        }
+
+        animate();
+
+       
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+    </script>
+</body>
+</html>
